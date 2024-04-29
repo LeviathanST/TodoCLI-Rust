@@ -1,10 +1,12 @@
+mod constant;
 mod ui;
-
-use std::cmp::min;
+mod utils;
 
 use pancurses::*;
 
-use ui::{FOCUS, UI};
+use constant::focus::FOCUS;
+use ui::UI;
+use utils::list::{list_down, list_remove, list_up};
 
 const REGULAR_PAIR: i16 = 0;
 const HIGHLIGHT_PAIR: i16 = 1;
@@ -68,49 +70,18 @@ fn main() {
         match window.getch() {
             Some(Input::Character('q')) => quit = true,
             Some(Input::Character('w')) => match focus {
-                FOCUS::TODO => {
-                    if (todo_cur > 0) {
-                        todo_cur -= 1
-                    }
-                }
-                FOCUS::DONE => {
-                    if (done_cur > 0) {
-                        done_cur -= 1
-                    }
-                }
+                FOCUS::TODO => list_up(&mut todo_cur),
+                FOCUS::DONE => list_up(&mut done_cur),
             },
             Some(Input::Character('s')) => match focus {
-                FOCUS::TODO => {
-                    if (todo_cur + 1 < todo_list.len()) {
-                        todo_cur += 1;
-                        todo_cur = todo_cur.clamp(0, todo_list.len() - 1);
-                    }
-                }
-                FOCUS::DONE => {
-                    if (done_cur + 1 < done_list.len()) {
-                        done_cur += 1;
-                        done_cur = done_cur.clamp(0, done_list.len() - 1);
-                    }
-                }
+                FOCUS::TODO => list_down(&mut todo_list, &mut todo_cur),
+                FOCUS::DONE => list_down(&mut done_list, &mut done_cur),
             },
             Some(Input::Character('t')) => focus = focus.toggle(),
-            Some(Input::Character('\n')) => {
-                match focus {
-                    FOCUS::TODO => {
-                        if (todo_cur < todo_list.len()) {
-                            todo_cur = todo_cur.clamp(0, todo_list.len() - 1);
-                            done_list.push(todo_list.remove(todo_cur));
-                        }
-                    }
-                    FOCUS::DONE => {
-                        if (done_cur < done_list.len()) {
-                            done_cur = done_cur.clamp(0, done_list.len() - 1);
-                            todo_list.push(done_list.remove(done_cur));
-                        }
-                    }
-                }
-            }
-            Some(Input::Character(c)) => todo_list.push(c.to_string()),
+            Some(Input::Character('\n')) => match focus {
+                FOCUS::TODO => list_remove(&mut todo_list, &mut todo_cur, &mut done_list),
+                FOCUS::DONE => list_remove(&mut done_list, &mut done_cur, &mut todo_list),
+            },
             _ => {}
         }
     }

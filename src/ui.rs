@@ -5,11 +5,6 @@ type Id = usize;
 const REGULAR_PAIR: i16 = 0;
 const HIGHLIGHT_PAIR: i16 = 1;
 
-struct List<'a> {
-    id: Id,
-    prefix: &'a str,
-}
-
 #[derive(Default)]
 pub struct UI {
     list_cur: Option<Id>,
@@ -62,16 +57,4 @@ impl UI {
     }
 }
 
-pub enum FOCUS {
-    TODO,
-    DONE,
-}
 
-impl FOCUS {
-    pub fn toggle(&self) -> Self {
-        match self {
-            FOCUS::TODO => FOCUS::DONE,
-            FOCUS::DONE => FOCUS::TODO,
-        }
-    }
-}
